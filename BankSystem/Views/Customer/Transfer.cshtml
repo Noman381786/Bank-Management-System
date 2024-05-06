@@ -1,0 +1,40 @@
+﻿
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="AccountId" name="AccountId" value="@ViewBag.AccountId" />
+
+    <div class="form-group">
+        <label>Recepient Account:</label>
+        <input type="text" class="form-control" id="recepientAccount"  required name="recepientAccount" /> 
+    </div>
+
+    <div class="form-group">
+        <label>Amount:</label>
+        <input type="number" required class="form-control" id="Amount" name="Amount" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+}
+@* 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script> *@
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+        // Check if '@ViewBag.Error' is not null and not an empty string
+        if ('@ViewBag.Error' && '@ViewBag.Error' !== '') {
+
+                toastr.options.timeOut = 1500;
+                toastr.error('@Html.Raw(ViewBag.Error)');
+        }
+            // 2000 is 2 seconds
+    });
+   
+</script>
+}

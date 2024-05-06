@@ -1,0 +1,37 @@
+﻿
+@model Customer
+
+@{
+    ViewBag.Title = "Edit Details";
+}
+
+<h2>Edit Details</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="Id" name="Id" value="@ViewBag.CustomerId" />
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name)
+        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.ValidationMessageFor(model => model.Name)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Email)
+        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.ValidationMessageFor(model => model.Email)
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Password)
+        @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.ValidationMessageFor(model => model.Password)
+    </div>
+    <div class="form-group">
+        <label>Account Type</label>
+        @Html.DropDownList("AccountType", new SelectList(new[] { "Personal", "Business" }), "Select Transaction Type", new { @class = "form-control" })
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+}

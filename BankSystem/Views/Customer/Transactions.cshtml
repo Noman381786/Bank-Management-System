@@ -22,6 +22,10 @@
 }*@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+
 @section Scripts {
     <script>
         $(document).ready(function () {
@@ -56,6 +60,34 @@
                     },
                     error: function (xhr, status, error) {
                         alert('Error deactivating account: ' + error);
+                    }
+                });
+            });
+            $('#CardBtn').click(function () {
+                $.ajax({
+                    url: '@Url.Action("CardRequestSend", "Customer")',
+                    type: 'POST',
+                    success: function (data) {
+                        toastr.options.timeOut = 1500;
+                        toastr.success("Card request sent successfully. ");
+                      //  window.location.href = '@Url.Action("Transactions", "Customer")'; // Redirect to home page
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error something went wrong: ' + error);
+                    }
+                });
+            });     
+            $('#checkBookBtn').click(function () {
+                $.ajax({
+                    url: '@Url.Action("CheckBookRequestSend", "Customer")',
+                    type: 'POST',
+                    success: function (data) {
+                        toastr.options.timeOut = 1500;
+                        toastr.success("Check Book request sent successfully.");
+                   //     window.location.href = '@Url.Action("Transactions", "Customer")'; // Redirect to home page
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error something  went wrong: ' + error);
                     }
                 });
             });
@@ -126,12 +158,15 @@
         @if (ViewBag.IsActive == true)
         {
             <div class="col-md-6 text-right">
-                <button id="deactivateBtn" class="btn btn-danger">Deactive</button>
                 <a href="/customer/EditCustomerDetails/?customerId=@ViewBag.CustomerId" class="btn btn-primary" disabled>Edit Details</a>
                 <a href="/customer/createtransaction/?accountId=@ViewBag.AccountId" class="btn btn-primary" disabled>New Transaction</a>
                 <a href="/customer/Transfer/?accountId=@ViewBag.AccountId" class="btn btn-primary" disabled>Transfer</a>
             </div>
-
+            <div class ="col-md-12 text-right">
+                <button id="deactivateBtn" class="btn btn-danger">Deactive</button>
+                <button id="checkBookBtn" class="btn btn-warning">Check Book Request</button>
+                <button id="CardBtn" class="btn btn-success">Card Request</button>
+            </div>
         }
         else
         {

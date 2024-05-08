@@ -4,7 +4,63 @@
 @{
     ViewBag.Title = "Create Transaction";
 }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+<style>
+    /* Style for the dialog box */
+    .dialog-box {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4); /* Black background with transparency */
+        padding-top: 60px;
+    }
 
+    /* Style for the dialog content */
+    .dialog-content {
+        background-color: #fefefe;
+        margin: 5% auto; /* 5% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 450px; /* Could be more or less, depending on screen size */
+    }
+
+    .receipt {
+        border: 1px solid #ccc;
+        padding: 20px;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+
+    .receipt-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .transaction-details {
+        margin-bottom: 20px;
+    }
+
+        .transaction-details table {
+            width: 100%;
+        }
+
+            .transaction-details table td {
+                padding: 5px;
+                border-bottom: 1px solid #ddd;
+            }
+
+    .total-amount {
+        text-align: right;
+        font-weight: bold;
+    }
+</style>
 <h2>Create Transaction</h2>
 
 @using (Html.BeginForm())
@@ -30,6 +86,98 @@
         @Html.ValidationMessageFor(model => model.TransactionType, "", new { @class = "text-danger" })
     </div>
 
-    <button type="submit" class="btn btn-primary">Create</button>
+    <button type="button" id="submitBtn" class="btn btn-primary">Create</button>
 }
 
+
+<div id="dialogBox" class="dialog-box">
+    <!-- Dialog content -->
+    <div class="dialog-content">
+        @* <span onclick="closeDialog()" style="float:right">&times;</span> <!-- Close button --> *@
+        <div class="receipt">
+            <div class="receipt-header">
+                <h2> Transaction Receipt</h2>
+            </div>
+            <div class="transaction-details">
+                <table>
+                    <tr>
+                        <td>Account Number:</td>
+                        <td id="fromAccount">EP123456789</td>
+                    </tr>
+                    <tr>
+                        <td>Date:</td>
+                        <td id="date">May 8, 2024</td>
+                    </tr>
+                    <tr>
+                        <td>Amount:</td>
+                        <td id="AmountRcp">PKR 500.00</td>
+                    </tr>
+                    <tr>
+                        <td>Purpose:</td>
+                        <td>Other</td>
+                    </tr>
+                </table>
+            </div>
+            <button onclick="closeDialog()" style="margin-left: 109px;" type="button" id="CardBtn" class="btn btn-success">Close </button>
+            @*
+
+            <div class="total-amount">
+            Total Amount: PKR 500.00
+            </div> *@
+        </div>
+        <!-- Add more content or form fields as needed -->
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+@*
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script> *@
+@section Scripts {
+    <script>
+        function closeDialog() {
+            document.getElementById("dialogBox").style.display = "none";
+            window.location.href = '@Url.Action("Transactions", "Customer")';
+        }
+        $(document).ready(function () {
+            // Check if '@ViewBag.Error' is not null and not an empty string
+     
+            $('#submitBtn').click(function () {
+                var accountId = '@ViewBag.AccountId';
+
+                var Description = $('#Description').val();
+                var TransactionType = $('#TransactionType').val();
+                var amount = $('#Amount').val();
+                $.ajax({
+                    url: '@Url.Action("CreateTransaction", "Customer")',
+                    type: 'POST',
+                    data: { Amount: amount, description: Description, AccountId: accountId, transactionType: TransactionType },
+                    success: function (data) {
+                        debugger;
+                        var formattedDate = moment(data.date).format('DD-MMM-YYYY');
+                        $('#date').text(formattedDate);
+                        $('#fromAccount').text(data.accountNumber);
+                     //   $('#fromAccount').text(data.transactionHistory.recipientAccountId);
+                        $('#AmountRcp').text("$" + amount);
+                        openDialog();
+                        //     alert('Account deactivated successfully!');
+                        //     window.location.href = '@Url.Action("Transactions", "Customer")'; // Redirect to home page
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error deactivating account: ' + error);
+                    }
+                });
+            });     // 2000 is 2 seconds
+
+            function openDialog() {
+                document.getElementById("dialogBox").style.display = "block";
+            }
+
+            // Function to close the dialog
+            function closeDialog() {
+                document.getElementById("dialogBox").style.display = "none";
+                window.location.href = '@Url.Action("Transactions", "Customer")';
+            }
+        });
+
+    </script>
+}

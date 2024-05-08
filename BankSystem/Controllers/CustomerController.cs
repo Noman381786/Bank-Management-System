@@ -3,6 +3,9 @@ using System;
 using System.Linq;
 using BankSystem.Models;
 using Microsoft.AspNetCore.Http;
+using System.Net.Mail;
+using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace BankSystem.Controllers
 {
@@ -228,8 +231,8 @@ namespace BankSystem.Controllers
             if (toAccount == null)
             {
                 ViewBag.AccountId = AccountId;
-                ViewBag.Error = "Recepients account not found";
-                return View();
+
+                return Json(new { success = false });
             }
 
             // transfer 
@@ -258,7 +261,13 @@ namespace BankSystem.Controllers
             _context.TransactionHistories.Add(toAccountTransaction);
             _context.TransactionHistories.Add(fromAccountTransaction);
             _context.SaveChanges();
-            return RedirectToAction("Transactions");
+            var returnvalue = fromAccountTransaction;
+            returnvalue.RecipientAccountId = fromAccount.AccountNumber;
+            return new JsonResult(new
+            {
+                transactionHistory = returnvalue
+            });
+            //return RedirectToAction("Transactions");
         }
 
         [HttpGet]
@@ -286,7 +295,11 @@ namespace BankSystem.Controllers
                 }
 
                 _context.SaveChanges();
-                return RedirectToAction("Transactions");
+                return new JsonResult(new
+                {
+                    date = DateTime.Now,
+                    accountNumber = account.AccountNumber
+                });
             }
             ViewBag.AccountId = newTransaction.AccountId;
             return View(newTransaction);
@@ -328,7 +341,7 @@ namespace BankSystem.Controllers
             // Update the existing customer with the edited details
             existingCustomer.Name = editedCustomer.Name;
             existingCustomer.Email = editedCustomer.Email;
-            existingCustomer.Password = editedCustomer.Password;
+            existingCustomer.Password = DecodeFrom64(editedCustomer.Password);
             existingCustomer.BankId = 1;
             existingCustomer.CreatedOn = DateTime.Now;
             
@@ -339,7 +352,69 @@ namespace BankSystem.Controllers
             // Redirect to a relevant action, such as the customer details page
             return RedirectToAction("Transactions");
         }
-       
+
+        [HttpPost]
+        public IActionResult CardRequestSend()
+        {
+           // EmailSend("test", "test");
+            // Redirect to a relevant action
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public IActionResult CheckBookRequestSend()
+        {
+         // EmailSend("test", "test");
+            // Redirect to a relevant action
+            return Json(new { success = true });
+        }
+
+        public bool EmailSend(string subject, string message)
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
+            // Get email settings from appsettings.json
+            string senderEmail = config["EmailSettings:SenderEmail"];
+            string senderPassword = config["EmailSettings:SenderPassword"];
+            string smtpServer = config["EmailSettings:SmtpServer"];
+            int smtpPort = int.Parse(config["EmailSettings:SmtpPort"]);
+            bool enableSsl = bool.Parse(config["EmailSettings:EnableSsl"]);
+
+            // Sender's email credentials
+
+                // Recipient's email 
+                string recipientEmail = "shehrozabbasi901@gmail.com";
+
+                // Create a new MailMessage instance
+                MailMessage mail = new MailMessage(senderEmail, recipientEmail);
+
+                // Set the subject and body of the email
+                mail.Subject = subject;
+                mail.Body = message;
+
+                // Create SMTP client and specify host and port
+                SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort);
+
+            // Specify credentials (if required by your SMTP server)        // Enable SSL encryption and specify authentication method
+            smtpClient.EnableSsl = true;
+            smtpClient.UseDefaultCredentials = false;
+            smtpClient.Credentials = new NetworkCredential(senderEmail, senderPassword);
+
+
+            try
+            {
+                    // Send the email
+                   smtpClient.Send(mail);
+                    Console.WriteLine("Email sent successfully!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to send email: " + ex.Message);
+                }
+            return true;
+        }
         [HttpPost]
         public IActionResult ActivateAccount(int accountId)
         {
